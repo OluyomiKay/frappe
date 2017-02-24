@@ -12,20 +12,23 @@ frappe.ui.FilterList = Class.extend({
 	},
 	make_dash: function() {
 		var me = this;
-		$(frappe.render_template("filter_dash", {})).appendTo(this.wrapper.find('.show_filters'));
+		var args = me.get_age_filters();
+		$(frappe.render_template("filter_dash", args)).appendTo(this.wrapper.find('.show_filters'));
+
 		//show filter dashboard
-		this.filters_visible = false;
-		this.show_filter_button = this.wrapper.find('.show-filter-dashboard');
-		me.filter_list_wrapper = $(me.wrapper).find('.dashboard-box');
-		this.show_filter_button.click(function() {
-			if(!me.filters_visible) {
-				me.show_filter_list();
-			} else {
-				me.hide_filter_list();
-			}
-			if (!me.loaded_stats && me.filters_visible){
-				me.reload_stats()
-			}
+		this.wrapper.find('.age_fields').on('click', function () {
+			me.agefield = $(this).text();
+			me.wrapper.find('.field_label').html(me.agefield);
+		});
+
+		this.wrapper.find('.age_dates').on('click', function () {
+			me.agedate = $(this).text();
+			me.wrapper.find('.date_label').html(me.agedate);
+		});
+
+		this.wrapper.find('.show-filter-dashboard').click(function() {
+			$(this).closest('.show_filters').find('.dashboard-box').toggle();
+			$(this).prop('title',($(this).prop('title')===__("Hide Standard Filters"))?__("Show Standard Filters") : __("Hide Standard Filters"))
 		});
 		//add stats
 		$.each(frappe.meta.docfield_map[this.doctype], function(i,d) {
@@ -44,17 +47,29 @@ frappe.ui.FilterList = Class.extend({
 		$.each(me.stats, function (i, v) {
 			me.render_dash_headers(v);
 		});
+
+		me.reload_stats()
 	},
-	show_filter_list: function(){
-		$(this.filter_list_wrapper).toggle(true);
-		this.show_filter_button.prop('title',__("Hide Filters"));
-		this.filters_visible = true;
+	get_age_filters: function() {
+		var args = {};
+		args.dashboard_age_dates = [{label:"All Dates"},
+			{label:"This Week"},
+			{label:"Last Week"},
+			{label:"This Month"},
+			{label:"Last Month"},
+			{label:"This Financial Year"},
+			{label:"Last Financial Year"}];
+		args.dashboard_age_fields = [];
+
+		$.each(frappe.meta.docfield_map[this.doctype], function (i, v) {
+			if (["Date", "Datetime"].indexOf(v.fieldtype) != -1) {
+				args.dashboard_age_fields.push({fieldname: v.fieldname, label: v.label});
+			}
+		});
+
+		return args
 	},
-	hide_filter_list: function(){
-		$(this.filter_list_wrapper).toggle(false);
-		this.show_filter_button.prop('title',__("Show Filters"));
-		this.filters_visible = false;
-	},
+
 	render_dash_headers: function(field){
 		var me = this;
 		var context = {
@@ -70,18 +85,16 @@ frappe.ui.FilterList = Class.extend({
 		this.wrapper.find(".filter-dashboard-items").css("width",width);
 	},
 	reload_stats: function(){
-		var me = this
-		if(this.fresh || this.filters_visible == false) {
+		if(this.fresh ) {
 			return;
 		}
-		$(me.wrapper).find(".filter-loading").toggle(true)
 		// set a fresh so that multiple refreshes do not happen
 		// at the same time.
 		this.fresh = true;
 		setTimeout(function() {
 			me.fresh = false;
 		}, 1000);
-		this.loaded_stats = true
+
 		//get stats
 		var me = this
 		return frappe.call({
@@ -98,7 +111,6 @@ frappe.ui.FilterList = Class.extend({
 				$.each(me.stats, function (i, v) {
 						me.render_filters(v, (r.message|| {})[v.name]);
 				});
-				$(me.wrapper).find(".filter-loading").toggle(false)
 			}
 		});
 	},
@@ -375,14 +387,6 @@ frappe.ui.FilterList = Class.extend({
 			if(this.filters[i].field && this.filters[i].field.df.fieldname==fieldname)
 				return this.filters[i];
 		}
-	},
-	remove_filter: function(fieldname, dont_run) {
-		for(var i in this.filters) {
-			if(this.filters[i].field && this.filters[i].field.df.fieldname==fieldname)
-				this.filters[i].remove(dont_run);
-				return true;
-		}
-		return false;
 	}
 });
 

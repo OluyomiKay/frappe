@@ -1,17 +1,34 @@
 <div class="filter_area">
-    <div class="filter-box dashboard-box" style="display: none; padding-left:20px;">
-        <div class="filter-loading">
-        <div style="position: absolute;background-color:#e6e6e6;
-        top: 0px;left: 0px;bottom: 0px;right: 0px;z-index:100;opacity:0.2;"></div>
-        <div class="freeze-message"style="position: absolute;
-          top: 50%;left: 50%;width: 100%;transform: translate(-50%, -50%);
-          -webkit-transform: translate(-50%, -50%);text-align: center;
-          opacity:1 !important;color: #36414C !important;">Loading</div>
-            </div>
-        <div class="list-filter-dashboard row">
-            <div class="filter-dashboard-items">
-
-            </div>
-        </div>
-    </div>
+	<div class="filter-box dashboard-box" style="display: none;padding-left:15px; padding-top: 0px;">
+		<div class="clearfix row" style="border-bottom: 1px solid #d1d8dd; padding-bottom: 2px;">
+			<div class="pull-left dropdown">
+				<a class="text-muted dropdown-toggle small" data-toggle="dropdown"
+				   aria-haspopup="true" aria-expanded="true" >
+					<span class="field_label"> {{ __("field_label") }}</span>
+				</a>
+				<ul class="dropdown-menu" style="margin-right: 10px;">
+					{% for value in dashboard_age_fields %}
+					<li><a class="age_fields" data-field="{{ value.fieldname }}">
+						{{ __(value.label) }}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
+			<div class="pull-left dropdown">
+				<a class="text-muted dropdown-toggle small" data-toggle="dropdown"
+				   aria-haspopup="true" aria-expanded="true" style="margin-left: 10px;">
+					<span class="date_label">{{ __("date_label") }}</span>
+				</a>
+				<ul class="dropdown-menu" style="margin-right: 10px;">
+					{% for value in dashboard_age_dates %}
+					<li><a class="age_dates">
+						{{ __(value.label) }}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+		<div class="list-filter-dashboard row" style="padding-top: 5px;">
+			<div class="filter-dashboard-items">
+			</div>
+		</div>
+	</div>
 </div>
