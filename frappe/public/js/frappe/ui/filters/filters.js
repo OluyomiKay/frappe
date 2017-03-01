@@ -12,7 +12,9 @@ frappe.ui.FilterList = Class.extend({
 	},
 	make_dash: function() {
 		var me = this;
-		$(frappe.render_template("filter_dash", {})).appendTo(this.wrapper.find('.show_filters'));
+		var args = me.get_age_filters();
+		$(frappe.render_template("filter_dash", args)).appendTo(this.wrapper.find('.show_filters'));
+		
 		//show filter dashboard
 		this.filters_visible = false;
 		this.show_filter_button = this.wrapper.find('.show-filter-dashboard');
@@ -27,6 +29,21 @@ frappe.ui.FilterList = Class.extend({
 				me.reload_stats()
 			}
 		});
+		this.wrapper.find('.age_fields').on('click', function () {
+			me.agefield = $(this).text();
+			me.wrapper.find('.field_label').html(me.agefield);
+			});
+		
+		this.wrapper.find('.age_dates').on('click', function () {
+			me.agedate = $(this).text();
+			me.wrapper.find('.date_label').html(me.agedate);
+			});
+		
+		this.wrapper.find('.show-filter-dashboard').click(function() {
+			$(this).closest('.show_filters').find('.dashboard-box').toggle();
+			$(this).prop('title',($(this).prop('title')===__("Hide Standard Filters"))?__("Show Standard Filters") : __("Hide Standard Filters"))
+		});
+		
 		//add stats
 		$.each(frappe.meta.docfield_map[this.doctype], function(i,d) {
 			if (d.in_filter_dash&&frappe.perm.has_perm(me.doctype, d.permlevel, "read")) {
@@ -55,6 +72,26 @@ frappe.ui.FilterList = Class.extend({
 		this.show_filter_button.prop('title',__("Show Filters"));
 		this.filters_visible = false;
 	},
+		get_age_filters: function() {
+		var args = {};
+		args.dashboard_age_dates = [{label:"All Dates"},
+									{label:"This Week"},
+									{label:"Last Week"},
+									{label:"This Month"},
+									{label:"Last Month"},
+									{label:"This Financial Year"},
+									{label:"Last Financial Year"}];
+		args.dashboard_age_fields = [];
+
+		$.each(frappe.meta.docfield_map[this.doctype], function (i, v) {
+				if (["Date", "Datetime"].indexOf(v.fieldtype) != -1) {
+					args.dashboard_age_fields.push({fieldname: v.fieldname, label: v.label});
+				}
+			});
+		
+		return args
+	},
+	
 	render_dash_headers: function(field){
 		var me = this;
 		var context = {
